@@ -1,3 +1,4 @@
+
 set.seed(10000)
 mainsplit <- initial_split(LoanData2, prop = 0.70)
 trainset <- training(mainsplit)
@@ -80,3 +81,64 @@ rf_metric
 
 ranger_obj <- pull_workflow_fit(rf_workflow )$fit
 ranger_obj%>%vip(num_features = 20)
+
+## Data Visualization
+
+p1<-ggplot(loandata,aes(x =Loan_Status, fill=Gender))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Gender")
+
+p2<-ggplot(loandata,aes(x =Loan_Status, fill=Married))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Married")
+
+p3<-ggplot(loandata,aes(x =Loan_Status, fill=Dependents))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Dependents")
+
+p4<-ggplot(loandata,aes(x =Loan_Status, fill=Education))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Education")
+
+grid.arrange(p1, p2, ncol=2)
+grid.arrange(p3, p4, ncol=2)
+
+p5<-ggplot(loandata,aes(x =Loan_Status, fill=Self_Employed ))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Employment")
+
+
+p6<-ggplot(loandata,aes(x =Loan_Status, fill=Property_Area ))+
+geom_bar(position = "dodge")+
+labs(x="Loan Status",y="Frequency",
+title="Loan Status by Property Area")
+
+grid.arrange(p5, p6, ncol=2)
+
+p7<-ggplot(loandata, aes(x = ApplicantIncome)) +
+geom_histogram(color = "black", fill = "gray")+
+labs(title = "Histogram of Applicant Income",
+x="Applicant Income",y="Frequency")
+
+p8<-ggplot(loandata, aes(x = CoapplicantIncome)) +
+geom_histogram(color = "black", fill = "gray")+
+labs(title = "Histogram of Co-Applicant Income",
+x="Co-ApplicantIncome",y="Frequency")
+
+p9<-ggplot(loandata, aes(x = Loan_Amount_Term)) +
+geom_histogram(color = "black", fill = "gray")+
+labs(title = "Histogram of Loan Amount",
+x="Loan Amount Term",y="Frequency")
+
+p10<-ggplot(loandata, aes(x = Credit_History)) +
+geom_histogram(color = "black", fill = "gray")+
+labs(title = "Histogram of Loan Amount",
+x="Credit History",y="Frequency")
+
+grid.arrange(p7, p8, nrow=2)
+grid.arrange(p9, p10, nrow=2)
