@@ -1,0 +1,82 @@
+set.seed(10000)
+mainsplit <- initial_split(LoanData2, prop = 0.70)
+trainset <- training(mainsplit)
+testset <- testing(mainsplit)
+
+rec_dt <- recipe(Loan_Status~., data = trainset)%>%
+  step_dummy(all_nominal_predictors(), one_hot = T)%>%
+  step_center(all_numeric_predictors())%>%
+  step_scale(all_numeric_predictors())%>%
+  prep(trainset)
+
+bake_train<- bake(rec_dt, new_data = trainset)
+bake_test<- bake(rec_dt, new_data = testset)
+
+##Random Forest
+rf<- rand_forest(mtry = 4, trees = 100)%>%
+   set_engine("ranger",importance = "impurity")%>%
+   set_mode("classification")
+
+## Decision Tree
+dtree<- decision_tree()%>%
+   set_engine("rpart")%>%
+   set_mode("classification")
+
+## Logistic Regression
+logis<- logistic_reg()%>%
+   set_engine("glm")%>%
+   set_mode("classification")
+
+## Fitting Random Forest
+rf_workflow <-
+  workflow() %>%
+  add_variables(
+    outcomes = Loan_Status, predictors = everything()
+  ) %>%
+  add_model(rf)%>%
+  fit(bake_train)
+
+## Fitting Decision Tree
+
+dt_workflow <-
+  workflow() %>%
+  add_variables(
+    outcomes = Loan_Status, predictors = everything()
+  ) %>%
+  add_model(dtree)%>%
+  fit(bake_train)
+
+## Fitting Logistic Regression
+
+lg_workflow <-
+  workflow() %>%
+  add_variables(
+    outcomes = Loan_Status, predictors = everything()
+  ) %>%
+  add_model(logis)%>%
+  fit(bake_train)
+  
+  log_pred <- bind_cols(
+select(bake_test,  Loan_Status),
+predict(lg_workflow, bake_test)
+)
+
+dt_pred <- bind_cols(
+select(bake_test,  Loan_Status),
+predict(dt_workflow, bake_test)
+)
+
+rf_pred <- bind_cols(
+select(bake_test,  Loan_Status),
+predict(rf_workflow, bake_test)
+)
+
+log_metric<-log_pred%>%metrics(truth = Loan_Status, estimate = .pred_class)
+dt_metric<-dt_pred%>%metrics(truth = Loan_Status, estimate = .pred_class)
+rf_metric<-rf_pred%>%metrics(truth = Loan_Status, estimate = .pred_class)
+log_metric
+dt_metric
+rf_metric
+
+ranger_obj <- pull_workflow_fit(rf_workflow )$fit
+ranger_obj%>%vip(num_features = 20)
